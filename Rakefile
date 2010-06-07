@@ -5,9 +5,9 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "smartfox"
-    gem.summary = %Q{TODO: one-line summary of your gem}
-    gem.description = %Q{TODO: longer description of your gem}
-    gem.email = "almightylinuxgod@me.com"
+    gem.summary = %Q{Client library for SmartFoxServer}
+    gem.description = %Q{Provides a client library for the SmartFox realtime communication server, including BlueBox extensions.}
+    gem.email = "self@richardpenwell.me"
     gem.homepage = "http://github.com/penwellr/smartfox"
     gem.authors = ["Richard Penwell"]
     gem.add_development_dependency "rspec", ">= 1.2.9"
