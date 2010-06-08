@@ -1,7 +1,7 @@
 require 'libxml'
 
 class SmartFox::Packet
-  attr_reader :action, :header, :room, :data
+  attr_reader :action, :header, :room, :data, :body
 
   def initialize(header, action, body, room = 0, extra = nil)
     @header = header

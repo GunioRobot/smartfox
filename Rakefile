@@ -13,6 +13,8 @@ begin
     gem.add_development_dependency "rspec", ">= 1.2.9"
     gem.add_dependency 'json'
     gem.add_dependency 'builder'
+    gem.add_dependency 'libxml-ruby'
+    gem.files.exclude 'nbproject/**'
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
   Jeweler::GemcutterTasks.new
@@ -30,6 +32,7 @@ Spec::Rake::SpecTask.new(:rcov) do |spec|
   spec.libs << 'lib' << 'spec'
   spec.pattern = 'spec/**/*_spec.rb'
   spec.rcov = true
+  spec.rcov_opts = ['--exclude', "features,kernel,load-diff-lcs\.rb,instance_exec\.rb,lib/spec.rb,lib/spec/runner.rb,^spec/*,bin/spec,examples,/gems,/Library/Ruby,\.autotest,#{ENV['GEM_HOME']}"]
 end
 
 task :spec => :check_dependencies
