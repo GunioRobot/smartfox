@@ -10,4 +10,13 @@ module SmartFox
   autoload :Packet, 'smartfox/packet'
   
   Logger = Logger.new(STDOUT)
+
+  class << Logger
+    def exception(exception)
+      error exception.message
+      exception.backtrace.each do |line|
+        error "  #{line}"
+      end
+    end
+  end
 end

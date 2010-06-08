@@ -4,6 +4,8 @@ require 'smartfox'
 require 'spec'
 require 'spec/autorun'
 
+require File.join(File.dirname(__FILE__), 'waiter')
+
 SmartFox::Logger.level = Logger::DEBUG
 
 Spec::Runner.configure do |config|

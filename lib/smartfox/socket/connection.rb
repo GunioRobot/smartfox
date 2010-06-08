@@ -11,6 +11,7 @@ class SmartFox::Socket::Connection
     @event_thread = nil
     @disconnecting = false
     @buffer = String.new
+    @packets = []
   end
 
   def connect
@@ -26,29 +27,21 @@ class SmartFox::Socket::Connection
       
     rescue => e
       SmartFox::Logger.error "In SmartFox::Socket::Connection#connect:"
-      SmartFox::Logger.error "  #{e.inspect}"
+      SmartFox::Logger.exception e
+      raise e
     end
   end
 
   def disconnect
     @disconnecting = true
     while @connected
-      sleep
+      Thread.pass
     end
+    @socket.close if @socket
   end
 
   def send_data(data)
     @socket.write(data)
-  end
-
-  def data_available?
-    not @buffer.empty?
-  end
-
-  def read_packet
-    packet = @buffer
-    @buffer = ""
-    return packet
   end
 
   def event_loop
@@ -57,8 +50,15 @@ class SmartFox::Socket::Connection
     until @disconnecting
       SmartFox::Logger.debug "SmartFox::Socket::Connection#event_loop tick #{ticks}"
 
-      @buffer << @socket.readpartial(4096)
+      @buffer += @socket.readpartial(4096)
+      
+      while index = @buffer.index("\0")
+        @packets << @buffer.slice!(0..index)
+      end
 
+      @packets.each { |packet| @client.packet_recieved(packet) }
+      @packets.clear
+      
       ticks += 1
     end
 

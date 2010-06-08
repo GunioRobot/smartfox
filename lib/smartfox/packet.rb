@@ -7,7 +7,7 @@ class SmartFox::Packet
     @header = header
     @action = action
     @room = room
-    @extra = extra
+    @data = extra
   end
 
   def self.parse(data)
