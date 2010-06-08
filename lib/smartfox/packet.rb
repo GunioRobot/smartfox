@@ -6,8 +6,8 @@ class SmartFox::Packet
   def initialize(header, action, room = 0, extra = nil)
     @header = header
     @action = action
-    @room = room
-    @data = extra
+    @room = room.to_i
+    @data = (@header == SmartFox::Client::HEADER_EXTENDED ? SmartFox::Packet.parse_extended(extra) : extra)
   end
 
   def self.parse(data)
@@ -22,7 +22,7 @@ class SmartFox::Packet
   end
 
   def self.parse_xml(data)
-    SmartFox::Logger.debug "SmartFox::Packet#parse_xml('#{data}')"
+    SmartFox::Logger.debug "SmartFox::Packet.parse_xml('#{data}')"
     document = LibXML::XML::Parser.string(data).parse
     header = document.root['t']
     action = document.root.child['action']
@@ -32,10 +32,42 @@ class SmartFox::Packet
   end
 
   def self.parse_json(data)
-    SmartFox::Logger.debug "SmartFox::Packet#parse_json('#{data}')"
+    SmartFox::Logger.debug "SmartFox::Packet.parse_json('#{data}')"
   end
 
   def self.parse_string(data)
-    SmartFox::Logger.debug "SmartFox::Packet#parse_string('#{data}')"
+    SmartFox::Logger.debug "SmartFox::Packet.parse_string('#{data}')"
+  end
+
+  def self.parse_extended(data)
+    SmartFox::Logger.debug "SmartFox::Packet.parse_extended('#{data}')"
+    document = LibXML::XML::Parser.string(data.content).parse
+    parse_extended_object document.root
+  end
+
+  def self.parse_extended_scaler(node)
+    case node['t']
+    when 'n'
+      node.content.to_i
+    when 's'
+      node.content
+    when 'b'
+      node.content == "1"
+    end
+  end
+
+  def self.parse_extended_object(node)
+    result = {}
+
+    node.children.each do |child|
+      case child.name
+      when 'var'
+        result[child["n"].to_sym] = parse_extended_scaler(child)
+      when 'obj'
+        result[child["o"].to_sym] = parse_extended_object(child)
+      end
+    end
+
+    result
   end
 end

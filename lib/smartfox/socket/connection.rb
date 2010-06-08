@@ -50,14 +50,21 @@ class SmartFox::Socket::Connection
     until @disconnecting
       SmartFox::Logger.debug "SmartFox::Socket::Connection#event_loop tick #{ticks}"
 
-      @buffer += @socket.readpartial(4096)
+      buffer = String.new
+      begin
+        @socket.read_nonblock(4096, buffer)
+        
+        @buffer += buffer if buffer
       
-      while index = @buffer.index("\0")
-        @packets << @buffer.slice!(0..index)
-      end
+        while index = @buffer.index("\0")
+          @packets << @buffer.slice!(0..index)
+        end
 
-      @packets.each { |packet| @client.packet_recieved(packet) }
-      @packets.clear
+        @packets.each { |packet| @client.packet_recieved(packet) }
+        @packets.clear
+      rescue => e
+        Thread.pass
+      end
       
       ticks += 1
     end

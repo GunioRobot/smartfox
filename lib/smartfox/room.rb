@@ -1,0 +1,3 @@
+class SmartFox::Room
+
+end

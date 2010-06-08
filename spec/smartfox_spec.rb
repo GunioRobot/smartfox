@@ -1,6 +1,27 @@
+require 'json'
+
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe SmartFox::Client do
+  def transport
+    @connection.instance_variable_get(:@transport)
+  end
+
+  def expect_send_data
+    transport.should_receive(:send_data) do |data|
+      yield data
+    end
+  end
+
+  def login_to_connection
+    login_waiter = Waiter.new
+    @connection.add_handler(:connected) { |connection| connection.login 'simpleChat', 'penwellr' }
+    @connection.add_handler(:logged_in) { login_waiter.fire }
+    @connection.connect
+
+    login_waiter.wait(10)
+  end
+
   before(:each) do
     @connection = SmartFox::Client.new()
   end
@@ -39,6 +60,27 @@ describe SmartFox::Client do
     @connection.connect
 
     login_waiter.wait(10)
+  end
+
+  it "should properly serialize extended json packets" do
+    @connection.connect
+    expect_send_data do |data|
+      object = JSON.parse(data.chop)
+      object.should == { "t" => 'xt', "b" => { "x" => 'ManChatXT', "c" => 'grlbk', "r" => 6, "p" => {} } }
+    end
+
+    @connection.send_extended('ManChatXT', 'grlbk', :room => 6, :format => :json)
+  end
+
+  it "should retrieve the room list asyncronously" do
+    login_to_connection
+    updated_waiter = Waiter.new
+    room_list = nil
+    @connection.add_handler(:rooms_updated) { |client, rooms| room_list = rooms; updated_waiter.fire }
+    @connection.refresh_rooms
+    updated_waiter.wait
+
+    room_list.should_not be_blank
   end
   
   it "should fall back on BlueBox if needed"
