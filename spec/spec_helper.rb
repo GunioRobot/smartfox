@@ -4,6 +4,8 @@ require 'smartfox'
 require 'spec'
 require 'spec/autorun'
 
+SmartFox::Logger.level = Logger::DEBUG
+
 Spec::Runner.configure do |config|
   
 end

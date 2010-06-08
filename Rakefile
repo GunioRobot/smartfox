@@ -11,6 +11,8 @@ begin
     gem.homepage = "http://github.com/penwellr/smartfox"
     gem.authors = ["Richard Penwell"]
     gem.add_development_dependency "rspec", ">= 1.2.9"
+    gem.add_dependency 'json-pure'
+    gem.add_dependency 'builder'
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
   Jeweler::GemcutterTasks.new
@@ -43,3 +45,5 @@ Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_files.include('README*')
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
+
+task :gem => :build
