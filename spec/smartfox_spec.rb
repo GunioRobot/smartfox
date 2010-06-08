@@ -80,8 +80,68 @@ describe SmartFox::Client do
     @connection.refresh_rooms
     updated_waiter.wait
 
-    room_list.should_not be_blank
+    room_list.should_not be_empty
   end
-  
-  it "should fall back on BlueBox if needed"
+
+  it "should join a room with auto join" do
+    login_to_connection
+    room_joined_waiter = Waiter.new
+    @connection.add_handler(:room_joined) { |client, room| room_joined_waiter.fire }
+    @connection.add_handler(:rooms_updated) { |client, rooms| @connection.auto_join }
+    @connection.refresh_rooms
+    room_joined_waiter.wait
+
+    @connection.current_room.current_users.should == 1
+  end
+
+  it "should see it's own messages sent from the room" do
+    login_to_connection
+    message_sent_waiter = Waiter.new
+    @connection.add_handler(:room_joined) do |client, room|
+      room.add_handler(:message_sent) { message_sent_waiter.fire }
+      room.send_message "Hello world"
+    end
+    @connection.add_handler(:rooms_updated) { |client, rooms| @connection.auto_join }
+    @connection.refresh_rooms
+    message_sent_waiter.wait
+
+    @connection.current_room.transcript.count.should == 1
+  end
+
+  it "should see it's own messages received from the room" do
+    login_to_connection
+    message_received_waiter = Waiter.new
+    @connection.add_handler(:room_joined) do |client, room|
+      room.add_handler(:message_received_self) { message_received_waiter.fire }
+      room.send_message "Hello world"
+    end
+    @connection.add_handler(:rooms_updated) { |client, rooms| @connection.auto_join }
+    @connection.refresh_rooms
+    message_received_waiter.wait
+
+    @connection.current_room.transcript.count.should == 1
+  end
+
+  it "should see others messages in the room, and play nicely if there are two instances" do
+    login_to_connection
+    message_received_waiter = Waiter.new
+    @connection.add_handler(:room_joined) do |client, room|
+      room.add_handler(:message_received_other) { message_received_waiter.fire }
+    end
+    @connection.add_handler(:rooms_updated) { |client, rooms| @connection.auto_join }
+    @connection.refresh_rooms
+
+    second_connection = SmartFox::Client.new()
+    second_connection.add_handler(:room_joined) do |client, room|
+      room.send_message "From two"
+    end
+    second_connection.add_handler(:connected) { |client| client.login('simpleChat', 'other') }
+    second_connection.add_handler(:logged_in) { |client| client.refresh_rooms }
+    second_connection.add_handler(:rooms_updated) {|client, rooms| client.auto_join }
+    second_connection.connect
+
+    message_received_waiter.wait
+
+    @connection.current_room.transcript.count.should == 1
+  end
 end

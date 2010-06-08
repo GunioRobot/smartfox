@@ -34,10 +34,11 @@ class SmartFox::Socket::Connection
 
   def disconnect
     @disconnecting = true
+    @socket.close if @socket
     while @connected
       Thread.pass
     end
-    @socket.close if @socket
+    
   end
 
   def send_data(data)
@@ -52,7 +53,7 @@ class SmartFox::Socket::Connection
 
       buffer = String.new
       begin
-        @socket.read_nonblock(4096, buffer)
+        buffer = @socket.readpartial(4096)
         
         @buffer += buffer if buffer
       

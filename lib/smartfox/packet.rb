@@ -3,10 +3,11 @@ require 'libxml'
 class SmartFox::Packet
   attr_reader :action, :header, :room, :data
 
-  def initialize(header, action, room = 0, extra = nil)
+  def initialize(header, action, body, room = 0, extra = nil)
     @header = header
     @action = action
     @room = room.to_i
+    @body = body
     @data = (@header == SmartFox::Client::HEADER_EXTENDED ? SmartFox::Packet.parse_extended(extra) : extra)
   end
 
@@ -27,8 +28,8 @@ class SmartFox::Packet
     header = document.root['t']
     action = document.root.child['action']
     room = document.root.child['r']
-    extra = document.root.child.child
-    new(header, action, room, extra)
+    extra = document.root.child.children? ? document.root.child.children : nil
+    new(header, action, document.root.child, room, extra)
   end
 
   def self.parse_json(data)
@@ -41,7 +42,7 @@ class SmartFox::Packet
 
   def self.parse_extended(data)
     SmartFox::Logger.debug "SmartFox::Packet.parse_extended('#{data}')"
-    document = LibXML::XML::Parser.string(data.content).parse
+    document = LibXML::XML::Parser.string(data.first.content).parse
     parse_extended_object document.root
   end
 

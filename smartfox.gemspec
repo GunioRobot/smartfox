@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{smartfox}
-  s.version = "0.2.0"
+  s.version = "0.2.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Richard Penwell"]
-  s.date = %q{2010-06-07}
+  s.date = %q{2010-06-08}
   s.description = %q{Provides a client library for the SmartFox realtime communication server, including BlueBox extensions.}
   s.email = %q{self@richardpenwell.me}
   s.extra_rdoc_files = [
@@ -28,6 +28,7 @@ Gem::Specification.new do |s|
      "lib/smartfox/blue_box/connection.rb",
      "lib/smartfox/client.rb",
      "lib/smartfox/packet.rb",
+     "lib/smartfox/room.rb",
      "lib/smartfox/socket.rb",
      "lib/smartfox/socket/connection.rb",
      "nbproject/configs/Spec.properties",
@@ -39,6 +40,7 @@ Gem::Specification.new do |s|
      "nbproject/project.properties",
      "nbproject/project.xml",
      "smartfox.gemspec",
+     "spec/packet_spec.rb",
      "spec/smartfox_spec.rb",
      "spec/spec.opts",
      "spec/spec_helper.rb",
@@ -50,7 +52,8 @@ Gem::Specification.new do |s|
   s.rubygems_version = %q{1.3.7}
   s.summary = %q{Client library for SmartFoxServer}
   s.test_files = [
-    "spec/smartfox_spec.rb",
+    "spec/packet_spec.rb",
+     "spec/smartfox_spec.rb",
      "spec/spec_helper.rb",
      "spec/waiter.rb"
   ]

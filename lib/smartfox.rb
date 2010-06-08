@@ -8,6 +8,9 @@ module SmartFox
   autoload :Socket, 'smartfox/socket'
   autoload :BlueBox, 'smartfox/blue_box'
   autoload :Packet, 'smartfox/packet'
+  autoload :Room, 'smartfox/room'
+  autoload :User, 'smartfox/user'
+  autoload :Message, 'smartfox/message'
   
   Logger = Logger.new(STDOUT)
 

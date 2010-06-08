@@ -8,7 +8,7 @@ class SmartFox::Client
   class TransportTimeoutError < SmartFox::SmartFoxError; end
 
   attr_reader :connected, :room_list, :buddy_list, :server, :port
-  attr_reader :current_room
+  attr_reader :current_room, :users, :user_id
   alias_method :connected?, :connected
   
   CLIENT_VERSION = "1.5.8"
@@ -27,6 +27,8 @@ class SmartFox::Client
   ACTION_AUTO_JOIN = 'autoJoin'
   ACTION_UPDATE_ROOMS = 'getRmList'
   ACTION_ROOM_LIST = 'rmList'
+  ACTION_JOIN_OK = 'joinOK'
+  ACTION_JOIN_FAIL = 'joinKO'
 
   EXTENDED_RESPONSE = 'xtRes'
   
@@ -39,7 +41,8 @@ class SmartFox::Client
     @server = options[:server] || 'localhost'
     @port = options[:port]
     @events = {}
-    @rooms = []
+    @rooms = {}
+    @users = {}
   end
   
   def connect()
@@ -138,6 +141,14 @@ class SmartFox::Client
     end
   end
 
+  def parse_user(node)
+    if user = @users[node['i'].to_i]
+      user.parse(node)
+    else
+      @users[node['i'].to_i] = SmartFox::User.parse(node)
+    end
+  end
+
   private
   def send_packet(header, action, room_id = -1)
     xml = Builder::XmlMarkup.new()
@@ -181,18 +192,32 @@ class SmartFox::Client
   def handle_system_packet(packet)
     case packet.action
     when ACTION_LOGIN_OK
-      @username = packet.data['n']
-      @moderator = packet.data['mod'] != "0"
-      @id = packet.data['id']
-      SmartFox::Logger.info "SmartFox::Client logged in as #{@username}"
+      @username = packet.data.first['n']
+      @moderator = packet.data.first['mod'] != "0"
+      @user_id = packet.data.first['id'].to_i
+      SmartFox::Logger.info "SmartFox::Client logged in as #{@username} (ID:#{@user_id})"
       raise_event(:logged_in, self)
     when ACTION_ROOM_LIST
       @rooms.clear
-      packet.data.children.each do |room|
-        @rooms << SmartFox::Room.parse(room)
+      packet.data.first.children.each do |room|
+        room_object = SmartFox::Room.parse(self, room)
+        @rooms[room_object.id] = room_object
       end
 
       raise_event(:rooms_updated, self, @rooms)
+    when ACTION_JOIN_OK
+      @current_room = @rooms[packet.room]
+      SmartFox::Logger.info "SmartFox::Client joined room #{packet.room}"
+      SmartFox::Logger.debug "SmartFox::Client#handle_system_packet ACTION_JOIN_OK data => #{packet.data}"
+      @current_room.joined
+      @current_room.parse_users(packet.data.find{|n| n.name == 'uLs'})
+      raise_event(:room_joined, self, @current_room)
+    when ACTION_JOIN_FAIL
+      raise_event(:room_join_failed, self)
+    else
+      if packet.room > 0
+        @rooms[packet.room].handle_system_packet(packet)
+      end
     end
   end
 
