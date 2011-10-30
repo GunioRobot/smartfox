@@ -3,7 +3,7 @@ require 'logger'
 
 module SmartFox
   class SmartFoxError < Exception; end
-  
+
   autoload :Client, 'smartfox/client'
   autoload :Socket, 'smartfox/socket'
   autoload :BlueBox, 'smartfox/blue_box'
@@ -11,7 +11,7 @@ module SmartFox
   autoload :Room, 'smartfox/room'
   autoload :User, 'smartfox/user'
   autoload :Message, 'smartfox/message'
-  
+
   Logger = Logger.new(STDOUT)
 
   class << Logger

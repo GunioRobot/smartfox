@@ -50,7 +50,7 @@ class SmartFox::Room
       @users[user.id] = user
     end
   end
-  
+
   def send_message(message)
     SmartFox::Logger.info "SmartFox::Room#send_message('#{message}')"
     @client.send :send_packet, SmartFox::Client::HEADER_SYSTEM, ACTION_PUBLISH_MESSAGE, self.id do |packet|

@@ -24,7 +24,7 @@ class SmartFox::Socket::Connection
       @connected = true
       @event_thread = Thread.start(self) { |connection| connection.event_loop }
       @client.connect_succeeded
-      
+
     rescue => e
       SmartFox::Logger.error "In SmartFox::Socket::Connection#connect:"
       SmartFox::Logger.exception e
@@ -38,7 +38,7 @@ class SmartFox::Socket::Connection
     while @connected
       Thread.pass
     end
-    
+
   end
 
   def send_data(data)
@@ -54,9 +54,9 @@ class SmartFox::Socket::Connection
       buffer = String.new
       begin
         buffer = @socket.readpartial(4096)
-        
+
         @buffer += buffer if buffer
-      
+
         while index = @buffer.index("\0")
           @packets << @buffer.slice!(0..index)
         end
@@ -66,7 +66,7 @@ class SmartFox::Socket::Connection
       rescue => e
         Thread.pass
       end
-      
+
       ticks += 1
     end
 
